@@ -53,5 +53,30 @@ class Jasoseol(models.Model):
 
 >> admin.site.register()
 
+# 3강
+
+## 모델폼
+
+>> 모델에 대응하는 html폼을 만들어 줌
+
+>> 데이터를 생성하거나 업데이트가 간편
+
+>> 폼을 다루는 법을 배워야함
+
+* display flex
+>> p 태그나 다른 요소들을 컨트롤할 수 있음
+
+* forms.py
+
+~~~
+from django import forms
+from .models import Jasoseol
+
+class JssForm(forms.ModelForm):
+
+    class meta:
+        model = Jasoseol
+        fields = ('title', 'content',)
+~~~
 
 
