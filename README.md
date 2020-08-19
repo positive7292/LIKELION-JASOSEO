@@ -79,4 +79,172 @@ class JssForm(forms.ModelForm):
         fields = ('title', 'content',)
 ~~~
 
+# 4강
+
+## primary key
+
+>> 중복될 수 없는 단일 값
+
+>> 오브젝트를 식별할 수 있는 값
+
+>> 만약 pk를 설정하지 않는다면 id가 만들어짐
+
+>> detail.html -- views.py -- urls.py 
+
+* pk 설정하는 법
+~~~
+class MyModel(models.Model):
+        my_pk = models.IntegerField(primary_key=True)
+~~~
+
+1. detail 생성
+~~~
+def detail(request, jss_id):
+    # my_jss = jasoseol.objects.get(pk=jss_id)
+    my_jss = get_object_or_404(jasoseol, pk=jss_id)
+    return render(request, 'detail.html', {'my_jss':my_jss}
+~~~
+
+2. delete 생성
+~~~
+def delete(request, jss_id):
+    my_jss = jasoseol.objects.get(pk=jss_id)
+    my_jss.delete()
+    return redirect('index')
+~~~
+3. update 생성
+~~~
+def update(request, jss_id):
+    my_jss = jasoseol.objects.get(pk=jss_id)
+    jss_form = JssForm(instance=my_jss)
+    if request.method == "POST":
+      updated_form = JssForm(request.POST, instance=my_jss)
+      if updated_form.is_valid():
+          updated_form.save()
+          return redirect('index')
+~~~
+
+# 5,6강
+
+## USER 모델
+
+>> Django에서 지원하는 시스템
+
+## URL 상속
+
+>>  urls.py
+
+~~~
+from django.urls import path
+urls.py -> path('', include('main.urls'))
+import include
+~~~
+
+## 회원가입
+
+>> views.py
+
+~~~
+from django.contrib.auth.forms import UserCreationForm
+
+def signup(request):
+
+    regi_form = UserCreationForm()
+    if request.method == "POST":
+        filled_form = UserCreationForm(request.POST)
+        if filled_form.is_valid():
+            filled_form.save()
+            return redirect('index')
+            
+        # else:
+        
+
+    return render(request, 'signup.html', {'regi_form':regi_form})
+~~~
+
+## 로그인, 로그아웃
+
+>> urls.py
+
+~~~
+from django.contrib.auth.views import LoginView, LogoutView
+
+urlpatterns = [
+    path('signup/', signup, name='signup'),
+    path('login/', LoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+]
+~~~
+
+# 7강
+
+## Foreign key
+
+>> 데이터의 참조 무결성을 확인하기 위하여 사용
+
+>> maim.models.py
+
+~~~
+class Jasoseol(models.Model):
+    title = models.CharField(max_length=50)
+    content = models.TextField()
+    updated_at = models.DateTimeField(auto_now=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+~~~
+
+# 8강
+
+## 댓글 만들기
+
+>> views.py
+
+~~~
+def create_comment(request, jss_id):
+    comment_form = CommentForm(request.POST)
+    if comment_form.is_valid():
+        temp_form = comment_form.save(commit=False)
+        temp_form.author = request.user
+        temp_form.jasoseol = Jasoseol.objects.get(pk=jss_id)
+        temp_form.save()
+        return redirect('detail', jss_id)
+
+def delete_comment(request, jss_id, comment_id):
+    my_comment = Comment.objects.get(pk=comment_id)
+    if request.user == my_comment.author:
+        my_comment.delete()
+        return redirect('detail', jss_id)
+
+    else:
+        raise PermimssionDenied
+~~~
+
+# 9강
+
+## 글자수 세기
+
+>> 요소 선택 -- 이벤트 핸들러
+
+>>> 요소 선택 : querySelector
+
+>>> 이벤트 핸들러 : 요소.addEventListener
+
+* count.js
+
+>> 요소 선택
+
+~~~
+const targetForm = document.querySelector('.jss_content_form')
+const counted_text = document.querySelector('.counted_text')
+~~~
+
+>> 이벤트 핸들러
+
+~~~
+targetForm.addEventListener("keyup", function() {
+    counted_text.innerHTML = targetForm.value.length
+})
+~~~
+
+
+
 
